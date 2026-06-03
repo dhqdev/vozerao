@@ -22,6 +22,15 @@ export function saveToHistory(item: TranscriptionResult): void {
   }
 }
 
+export function updateHistory(id: string, updates: Partial<TranscriptionResult>): void {
+  const history = getHistory()
+  const index = history.findIndex((h) => h.id === id)
+  if (index !== -1) {
+    history[index] = { ...history[index], ...updates }
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
+  }
+}
+
 export function removeFromHistory(id: string): void {
   const history = getHistory()
   const filtered = history.filter((h) => h.id !== id)
@@ -36,10 +45,10 @@ export function getStats() {
   const history = getHistory()
   const totalTranscriptions = history.length
   
-  // Estimate minutes based on average file size (rough estimation)
+  // Estimate minutes based on word count (150 words/min average)
   const totalMinutes = history.reduce((acc, item) => {
-    // Assuming ~1MB per minute of audio on average
-    const estimatedMinutes = (item.fileSize || 500000) / 1000000
+    const wordCount = item.transcription?.split(/\s+/).length || 0
+    const estimatedMinutes = wordCount / 150
     return acc + estimatedMinutes
   }, 0)
   
@@ -50,4 +59,28 @@ export function getStats() {
     totalMinutes: Math.round(totalMinutes * 10) / 10,
     languagesDetected: languages.size || 0,
   }
+}
+
+// Generate title from transcription content
+export function generateTitle(transcription: string, filename: string): string {
+  if (!transcription || transcription.length < 20) {
+    return filename.replace(/\.[^/.]+$/, '')
+  }
+
+  // Get first sentence or first ~50 chars
+  const firstSentence = transcription.split(/[.!?]/)[0]?.trim() || ''
+  
+  if (firstSentence.length > 5 && firstSentence.length <= 60) {
+    return firstSentence
+  }
+  
+  // Extract key words from beginning
+  const words = transcription.slice(0, 200).split(/\s+/).slice(0, 8)
+  let title = words.join(' ')
+  
+  if (title.length > 50) {
+    title = title.slice(0, 47) + '...'
+  }
+  
+  return title || filename.replace(/\.[^/.]+$/, '')
 }

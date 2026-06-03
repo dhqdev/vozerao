@@ -15,7 +15,7 @@ export default function DashboardLayout({
       <div className="min-h-screen bg-background">
         <Sidebar />
         <Header />
-        <main className="lg:ml-64 pt-16 lg:pt-0 pb-20 lg:pb-0 min-h-screen">
+        <main className="lg:ml-72 pt-16 lg:pt-0 min-h-screen">
           {children}
         </main>
         <MobileNav />

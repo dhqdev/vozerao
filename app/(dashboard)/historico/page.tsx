@@ -3,7 +3,16 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, FileAudio, Trash2, Clock, Mic, AlertTriangle } from 'lucide-react'
+import { 
+  Search, 
+  FileAudio, 
+  Trash2, 
+  Clock, 
+  Mic, 
+  AlertTriangle,
+  MessageSquare,
+  Globe
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,7 +46,7 @@ export default function HistoricoPage() {
     const timer = setTimeout(() => {
       setHistory(getHistory())
       setIsLoading(false)
-    }, 300)
+    }, 200)
 
     return () => clearTimeout(timer)
   }, [])
@@ -49,6 +58,7 @@ export default function HistoricoPage() {
     return history.filter(
       (item) =>
         item.filename.toLowerCase().includes(query) ||
+        item.title?.toLowerCase().includes(query) ||
         item.summary.toLowerCase().includes(query)
     )
   }, [history, searchQuery])
@@ -56,13 +66,13 @@ export default function HistoricoPage() {
   const handleDelete = (id: string) => {
     removeFromHistory(id)
     setHistory(getHistory())
-    toast.success('Transcrição removida do histórico')
+    toast.success('Transcrição removida')
   }
 
   const handleClearAll = () => {
     clearHistory()
     setHistory([])
-    toast.success('Histórico limpo com sucesso')
+    toast.success('Histórico limpo')
   }
 
   const openModal = (transcription: TranscriptionResult) => {
@@ -71,7 +81,7 @@ export default function HistoricoPage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 pb-24 lg:pb-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -81,7 +91,7 @@ export default function HistoricoPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Histórico de Transcrições
+              Histórico
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
               {history.length} {history.length === 1 ? 'transcrição salva' : 'transcrições salvas'}
@@ -91,28 +101,28 @@ export default function HistoricoPage() {
           {history.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="text-destructive hover:text-destructive">
-                  <Trash2 size={16} className="mr-2" />
-                  Limpar histórico
+                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive border-border/50">
+                  <Trash2 size={14} className="mr-2" />
+                  Limpar tudo
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="glass-strong border-border">
+              <AlertDialogContent className="glass-strong border-border/50">
                 <AlertDialogHeader>
                   <AlertDialogTitle className="flex items-center gap-2 text-foreground">
                     <AlertTriangle size={20} className="text-destructive" />
-                    Limpar todo o histórico?
+                    Limpar histórico?
                   </AlertDialogTitle>
                   <AlertDialogDescription className="text-muted-foreground">
-                    Esta ação não pode ser desfeita. Todas as suas transcrições salvas serão permanentemente removidas.
+                    Esta ação não pode ser desfeita. Todas as transcrições serão removidas permanentemente.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="border-border">Cancelar</AlertDialogCancel>
+                  <AlertDialogCancel className="border-border/50">Cancelar</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleClearAll}
                     className="bg-destructive hover:bg-destructive/90 text-white"
                   >
-                    Sim, limpar tudo
+                    Limpar
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -125,13 +135,13 @@ export default function HistoricoPage() {
           <div className="relative">
             <Search
               size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Buscar por nome do arquivo ou conteúdo..."
+              placeholder="Buscar por título, arquivo ou conteúdo..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-secondary/50 border-border"
+              className="pl-11 h-12 bg-secondary/30 border-border/50 rounded-xl focus:border-primary/50"
             />
           </div>
         )}
@@ -140,7 +150,7 @@ export default function HistoricoPage() {
         {isLoading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-xl" />
+              <Skeleton key={i} className="h-28 w-full rounded-2xl" />
             ))}
           </div>
         ) : filteredHistory.length > 0 ? (
@@ -155,64 +165,83 @@ export default function HistoricoPage() {
                   exit={{ opacity: 0, x: -100 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card className="glass border-border hover:border-primary/50 transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                        <div className="flex items-start gap-4 flex-1 min-w-0">
-                          <div className="p-3 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 shrink-0">
-                            <FileAudio size={24} className="text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-medium text-foreground truncate">
+                  <Card className="glass border-border/50 hover:border-primary/30 transition-all overflow-hidden group">
+                    <CardContent className="p-0">
+                      <div className="flex flex-col sm:flex-row">
+                        {/* Main Content - Clickable */}
+                        <button
+                          onClick={() => openModal(item)}
+                          className="flex-1 p-5 text-left hover:bg-primary/5 transition-colors"
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/15 to-accent/15 shrink-0">
+                              <FileAudio size={24} className="text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <p className="font-semibold text-foreground truncate">
+                                  {item.title || item.filename}
+                                </p>
+                              </div>
+                              <p className="text-xs text-muted-foreground truncate mb-2">
                                 {item.filename}
                               </p>
-                              {item.language && (
-                                <Badge variant="secondary" className="text-xs bg-primary/20 text-primary">
-                                  {item.language.toUpperCase()}
+                              <div className="flex flex-wrap items-center gap-2 mb-3">
+                                {item.language && (
+                                  <Badge variant="secondary" className="text-xs bg-primary/15 text-primary border-primary/20">
+                                    <Globe size={10} className="mr-1" />
+                                    {item.language.toUpperCase()}
+                                  </Badge>
+                                )}
+                                <Badge variant="secondary" className="text-xs bg-secondary/50 text-muted-foreground">
+                                  <Clock size={10} className="mr-1" />
+                                  {formatShortDate(item.createdAt)}
                                 </Badge>
-                              )}
+                                {item.chatHistory && item.chatHistory.length > 0 && (
+                                  <Badge variant="secondary" className="text-xs bg-accent/15 text-accent border-accent/20">
+                                    <MessageSquare size={10} className="mr-1" />
+                                    {item.chatHistory.length} msgs
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {item.summary}
+                              </p>
                             </div>
-                            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                              <Clock size={12} />
-                              <span>{formatShortDate(item.createdAt)}</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                              {item.summary}
-                            </p>
                           </div>
-                        </div>
+                        </button>
 
-                        <div className="flex sm:flex-col gap-2 shrink-0">
+                        {/* Actions */}
+                        <div className="flex sm:flex-col items-center justify-end gap-2 p-3 sm:p-4 border-t sm:border-t-0 sm:border-l border-border/50 bg-secondary/20">
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
                             onClick={() => openModal(item)}
-                            className="flex-1 sm:flex-none text-primary hover:text-accent"
+                            className="text-primary hover:text-accent hover:bg-primary/10"
                           >
-                            Ver detalhes
+                            Ver
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="flex-1 sm:flex-none text-destructive hover:text-destructive"
+                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                               >
-                                <Trash2 size={14} />
+                                <Trash2 size={16} />
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="glass-strong border-border">
+                            <AlertDialogContent className="glass-strong border-border/50">
                               <AlertDialogHeader>
                                 <AlertDialogTitle className="text-foreground">
                                   Remover transcrição?
                                 </AlertDialogTitle>
                                 <AlertDialogDescription className="text-muted-foreground">
-                                  A transcrição "{item.filename}" será removida permanentemente do histórico.
+                                  "{item.title || item.filename}" será removida permanentemente.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel className="border-border">
+                                <AlertDialogCancel className="border-border/50">
                                   Cancelar
                                 </AlertDialogCancel>
                                 <AlertDialogAction
@@ -233,12 +262,11 @@ export default function HistoricoPage() {
             </div>
           </AnimatePresence>
         ) : history.length > 0 ? (
-          // Search with no results
-          <Card className="glass border-border">
-            <CardContent className="p-8 text-center">
-              <Search size={48} className="text-muted-foreground mx-auto mb-4" />
+          <Card className="glass border-border/50">
+            <CardContent className="p-10 text-center">
+              <Search size={48} className="text-muted-foreground mx-auto mb-4 opacity-50" />
               <p className="text-foreground font-medium mb-2">
-                Nenhum resultado encontrado
+                Nenhum resultado
               </p>
               <p className="text-muted-foreground text-sm">
                 Tente buscar por outro termo
@@ -246,20 +274,19 @@ export default function HistoricoPage() {
             </CardContent>
           </Card>
         ) : (
-          // Empty state
-          <Card className="glass border-border">
-            <CardContent className="p-8 text-center">
-              <div className="p-4 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 w-fit mx-auto mb-4">
-                <FileAudio size={48} className="text-primary" />
+          <Card className="glass border-border/50">
+            <CardContent className="p-10 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mx-auto mb-4">
+                <FileAudio size={28} className="text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 Nenhuma transcrição salva
               </h3>
               <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                Suas transcrições salvas aparecerão aqui. Faça sua primeira transcrição agora!
+                Suas transcrições salvas aparecerão aqui
               </p>
               <Link href="/transcrever">
-                <Button className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white">
+                <Button className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white shadow-lg shadow-primary/20">
                   <Mic size={18} className="mr-2" />
                   Fazer primeira transcrição
                 </Button>
