@@ -1,5 +1,8 @@
 # vozerao
 
+<img width="1785" height="832" alt="image" src="https://github.com/user-attachments/assets/5e3b1721-df22-4fec-87e7-8f533e674770" />
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
 
 ## Built with v0
@@ -21,6 +24,8 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+<img width="1893" height="861" alt="image" src="https://github.com/user-attachments/assets/792ce10d-03fb-4a22-8d08-0635e5553eec" />
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
